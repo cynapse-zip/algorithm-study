@@ -1,0 +1,26 @@
+-- 코드를 입력하세요
+-- 1. MEMBER_PROFILE, REST_REVIEW 테이블 JOIN
+SELECT P.MEMBER_NAME, R.REVIEW_TEXT, DATE_FORMAT(R.REVIEW_DATE, '%Y-%m-%d') AS REVIEW_DATE
+FROM REST_REVIEW R
+JOIN MEMBER_PROFILE P ON R.MEMBER_ID = P.MEMBER_ID
+-- 2. 리뷰 작성자 기준으로 REST_REVIEW 테이블 묶어서 JOIN
+JOIN (
+    SELECT MEMBER_ID, COUNT(*) AS REVIEW_CNT
+    FROM REST_REVIEW
+    GROUP BY MEMBER_ID
+) C ON C.MEMBER_ID = R.MEMBER_ID
+-- 3. 그중 리뷰 최다 작성자 찾아서 JOIN
+JOIN (
+    -- 서브쿼리 부터 순서대로 실행되므로 스코프에 주의
+    -- 3.2 최대 리뷰 개수 구하기
+    SELECT MAX(CNT) AS MAX_CNT
+    FROM (
+        -- 3.1 리뷰 개수 구하기
+        SELECT COUNT(*) AS CNT
+        FROM REST_REVIEW
+        GROUP BY MEMBER_ID    
+    ) X
+    -- 서브쿼리는 반드시 별칭 필요
+) T ON C.REVIEW_CNT = T.MAX_CNT
+ORDER BY R.REVIEW_DATE ASC, R.REVIEW_TEXT ASC;
+
